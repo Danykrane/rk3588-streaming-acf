@@ -13,9 +13,12 @@
 /CTestTestfile.cmake
 /Makefile
 
-# Generated document exports (sources and the embedded graph stay tracked)
+# Local analysis, reports and document-generation tools
+/SOLUTION.md
 /SOLUTION.pdf
-/docs/graph.svg
+/TASK.md
+/docs/
+/tools/build_pdf.py
 
 # Temporary verification/rendering files and Python caches
 /tmp/
