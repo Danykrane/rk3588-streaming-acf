@@ -1,6 +1,9 @@
 #define DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN
 #include <doctest/doctest.h>
 #include <acf/Autocorrelation.h>
+#include "support/Reference.h"
+#include <type_traits>
+#include <utility>
 
 #include <algorithm>
 #include <cmath>
@@ -43,7 +46,7 @@ TEST_CASE("Both methods match independent reference through repeated ring wraps"
 				{
 					CAPTURE(i);
 					CAPTURE(f);
-					double const expected = acf::reference(samples, i, f);
+					double const expected = acf::test::reference(samples, i, f);
 					if (std::isnan(expected))
 						CHECK(std::isnan(row[f - 1]));
 					else
@@ -85,7 +88,7 @@ TEST_CASE("Sinusoid and step agree with direct integration")
 		auto row = processor.push(samples[i]);
 		if (i == 2499 || i == 2699 || i == 2700 || i == 3000 || i == 4199)
 			for (std::size_t f = 1; f <= acf::FrequencyCount; ++f)
-				CHECK(std::abs(row[f - 1] - acf::reference(samples, i, f)) < 2e-14);
+				CHECK(std::abs(row[f - 1] - acf::test::reference(samples, i, f)) < 2e-14);
 	}
 }
 
@@ -142,8 +145,38 @@ TEST_CASE("Signed 64 bit normalization is bounded and documents precision loss")
 TEST_CASE("Reference validates indices and frequencies")
 {
 	std::vector<double> samples(10, 1);
-	CHECK_THROWS_AS(acf::reference(samples, 10, 1), std::out_of_range);
-	CHECK_THROWS_AS(acf::reference(samples, 0, 0), std::invalid_argument);
-	CHECK(std::isnan(acf::reference(samples, 3, 500)));
-	CHECK(acf::reference(samples, 4, 500) == doctest::Approx(0.002));
+	CHECK_THROWS_AS(acf::test::reference(samples, 10, 1), std::out_of_range);
+	CHECK_THROWS_AS(acf::test::reference(samples, 0, 0), std::invalid_argument);
+	CHECK(std::isnan(acf::test::reference(samples, 3, 500)));
+	CHECK(acf::test::reference(samples, 4, 500) == doctest::Approx(0.002));
+}
+
+// Compile-time regression checks for the ownership contract.
+static_assert(!std::is_copy_constructible_v<acf::Autocorrelation>);
+static_assert(!std::is_copy_assignable_v<acf::Autocorrelation>);
+static_assert(!std::is_move_constructible_v<acf::Autocorrelation>);
+static_assert(!std::is_move_assignable_v<acf::Autocorrelation>);
+template<class T>
+concept TemporaryPush = requires(T && p) { std::move(p).push(0); };
+template<class T>
+concept TemporaryRow = requires(T && p) { std::move(p).row(); };
+static_assert(!TemporaryPush<acf::Autocorrelation>);
+static_assert(!TemporaryRow<acf::Autocorrelation>);
+
+TEST_CASE("Borrowed row remains stable until its documented overwrite")
+{
+	acf::Autocorrelation processor(acf::Method::Recursive);
+	for (int i = 0; i < 5; ++i)
+		processor.push(1);
+	auto const borrowed = processor.row();
+	CHECK(borrowed[499] == doctest::Approx(0.002));
+	for (std::size_t i = 0; i < acf::RowCount - 1; ++i)
+		processor.push(0);
+	CHECK(borrowed.data() == processor.row(acf::RowCount - 1).data());
+	CHECK(borrowed[499] == doctest::Approx(0.002));
+	processor.push(0);
+	CHECK(borrowed.data() == processor.row().data());
+	CHECK(borrowed[499] == 0);
+	processor.reset();
+	CHECK(std::isnan(borrowed[499]));
 }

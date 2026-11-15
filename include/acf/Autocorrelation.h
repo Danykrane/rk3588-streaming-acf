@@ -29,8 +29,6 @@ struct Parameters
 };
 
 Parameters parameters(std::size_t frequency);
-// Binary64 reference over normalized samples; unavailable history returns NaN.
-double reference(std::span<double const> samples, std::size_t index, std::size_t frequency);
 // Scales the complete signed integer range; does not promise bit-exact results.
 double normalize(std::int64_t sample) noexcept;
 
@@ -38,10 +36,18 @@ class Autocorrelation
 {
 public:
 	explicit Autocorrelation(Method method = Method::Direct, std::size_t rebaseEvery = 2048);
+	// Stable owner of borrowed row views; snapshots must be copied explicitly.
+	Autocorrelation(Autocorrelation const &) = delete;
+	Autocorrelation & operator=(Autocorrelation const &) = delete;
+	Autocorrelation(Autocorrelation &&) = delete;
+	Autocorrelation & operator=(Autocorrelation &&) = delete;
 	// No allocation after construction. Rejects nonfinite values and |value| > 1.
 	// Returned view is overwritten after RowCount pushes or reset(). Not thread-safe.
-	std::span<double const, FrequencyCount> push(double value);
-	std::span<double const, FrequencyCount> row(std::size_t age = 0) const;
+	std::span<double const, FrequencyCount> push(double value) &;
+	// A row(age) view is overwritten after RowCount - age successful pushes.
+	// All views expire with the owner; reset() replaces their contents with NaN.
+	std::span<double const, FrequencyCount> row(std::size_t age = 0) const &;
+	std::span<double const, FrequencyCount> row(std::size_t age = 0) const && = delete;
 	void reset() noexcept;
 	std::size_t availableRows() const noexcept { return m_availableRows; }
 
