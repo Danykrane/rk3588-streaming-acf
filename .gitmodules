@@ -1,0 +1,6 @@
+[submodule "ext/doctest"]
+	path = ext/doctest
+	url = https://github.com/doctest/doctest.git
+[submodule "ext/range-v3"]
+	path = ext/range-v3
+	url = https://github.com/ericniebler/range-v3.git
