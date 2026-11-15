@@ -56,4 +56,4 @@ python3 -m unittest discover -s tests -v
 `acf.cl` — эскиз FP32-ядра для GPU. Интеграция с OpenCL и прибором отсутствует;
 на Mali-G610 код не запускался. C++-реализация работает на CPU в double.
 
-Форматирование: clang-format 15, конфигурация проекта в `.clang-format`.
+Форматирование: clang-format 15, конфигурация в `.clang-format`.
