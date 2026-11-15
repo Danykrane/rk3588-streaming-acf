@@ -1,5 +1,17 @@
 # Тестовое задание: потоковая АКФ на RK3588
 
+**C++20-решение:** [сборка, API, пресеты и тесты](docs/CPP.md).
+Библиотека `acf`, консольная программа `acf_cli`, doctest и range-v3 как сабмодули.
+
+```sh
+git submodule update --init --recursive
+cmake --preset mac-release
+cmake --build --preset mac-release
+ctest --preset mac-release
+```
+
+На Linux используйте `linux-release`.
+
 Основной ответ: **SOLUTION.pdf**. Редактируемый исходник: [SOLUTION.md](SOLUTION.md).
 Граф: [SVG](docs/graph.svg) / [PNG](docs/graph.png).
 
