@@ -1,6 +1,33 @@
+# CMake/Ninja builds and local toolchain settings
+/build/
+/cmake-build-*/
+/CMakeUserPresets.json
+/CMakeCache.txt
+/CMakeFiles/
+/Testing/
+/compile_commands.json
+/build.ninja
+/.ninja_deps
+/.ninja_log
+/cmake_install.cmake
+/CTestTestfile.cmake
+/Makefile
+
+# Generated document exports (sources and the embedded graph stay tracked)
+/SOLUTION.pdf
+/docs/graph.svg
+
+# Temporary verification/rendering files and Python caches
+/tmp/
 __pycache__/
-*.pyc
-tmp/
+*.py[cod]
+.pytest_cache/
+
+# Editor and OS metadata
+/.idea/
+/.vscode/
 .DS_Store
-build/
-CMakeUserPresets.json
+._*
+*~
+*.swp
+*.swo
